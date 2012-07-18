@@ -5,6 +5,7 @@ require_relative 'messages/ICAPRequestHeader'
 require_relative 'messages/ICAPRequestRESPMOD'
 require_relative 'messages/ICAPResponseOptions'
 require_relative 'messages/ICAPResponseContinue'
+require_relative 'messages/ICAPResponseRESPMOD'
 
 
 
@@ -19,9 +20,12 @@ class ICAPServer
     loop do
       rcvline = clientSocket.gets
       entity_content << rcvline
-      break if rcvline =~ /^\r\n$/ #poprawic
+      break if ((rcvline =~ /^\r\n$/) && (entity_content[-2] =~ /\r\n$/))
     end
     requestRESPMOD.add_entity(entity_name, entity_content)  
+    #puts "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
+    #puts entity_content
+    #puts "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
   end
   
   def start
@@ -34,12 +38,19 @@ class ICAPServer
 	  loop do
 	    rcvline = clientSocket.gets
 	    requestHeader.content_addline(rcvline)
-	    break if rcvline =~ /^\r\n$/    #poprawic
+	    break if ((rcvline =~ /^\r\n$/) && (requestHeader.content[-2] =~ /\r\n$/))
 	  end
-	
+	  
+	  #puts "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
+	  #puts requestHeader.content
+	  #puts "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
+	  #puts "-> ODEBRANO HEADER"
+	  #puts requestHeader.type
+	  
 	  if requestHeader.type == :OPTIONS
-	    responseOptions = ICAPResponseOptions.new
-	    clientSocket.puts responseOptions.render
+	    puts "-> WYSYLANIE OPTIONS RESPONSE"
+	    clientSocket.puts ICAPResponseOptions.new.render
+	    puts "-> WYSLANO OPTIONS RESPONSE"
 	
 	  elsif requestHeader.type == :RESPMOD
 	    requestRESPMOD = ICAPRequestRESPMOD.new (requestHeader)
@@ -47,11 +58,18 @@ class ICAPServer
 	      get_entity(clientSocket, entity_name, requestRESPMOD)
 	    end
 	    if requestRESPMOD.need100continue?
+	      puts "-> POTRZEBA 100"
 	      clientSocket.puts ICAPResponseContinue.new.render
+	      puts "-> WYSLANO 100"
 	      get_entity(clientSocket, "res-body", requestRESPMOD)
+	      puts "-> ODEBRANO DANE"
+	      requestRESPMOD.remove_resbody_chunk_size
+	      puts "-> USUNIETO RESBODY CHUNK SIZE"
 	    end
 	    
-	    requestRESPMOD.print_entities
+	    responseRESPMOD = ICAPResponseRESPMOD.new(requestRESPMOD)
+	    puts "-> UTWORZONO ICAPResponseRESPMOD"
+	    clientSocket.puts responseRESPMOD.render
 	    
 	  elsif requestHeader.type == :REQMOD
 	    puts :REQMOD
