@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
 
 require 'socket'
-require_relative 'ICAPRequestHeader'
-require_relative 'ICAPRequestRESPMOD'
-require_relative 'ICAPResponseOptions'
-require_relative 'ICAPResponseContinue'
+require_relative 'messages/ICAPRequestHeader'
+require_relative 'messages/ICAPRequestRESPMOD'
+require_relative 'messages/ICAPResponseOptions'
+require_relative 'messages/ICAPResponseContinue'
 
 
 
