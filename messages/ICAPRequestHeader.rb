@@ -30,6 +30,10 @@ class ICAPRequestHeader
     @encapsulated_entities
   end
   
+  def content
+    @content
+  end
+  
   # add line to header and check if it is Encapsulated one
   def content_addline(line)
     @content << line

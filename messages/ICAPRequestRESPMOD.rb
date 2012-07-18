@@ -19,14 +19,8 @@ class ICAPRequestRESPMOD
     @header.encapsulated_entities.keys
   end
   
-  def print_entities
-    @entities.each_value do |v|
-      js = v.join.split("\r\n")
-      js.each do |pt|
-	puts "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	puts pt
-      end
-    end
+  def entities
+    @entities
   end
   
   def need100continue?
@@ -37,6 +31,17 @@ class ICAPRequestRESPMOD
     else
       return false
     end
+  end
+
+  def remove_resbody_chunk_size
+    temp = @entities["res-body"].join.split("\r\n")
+    temp2 = []
+    temp.each_with_index do |item, i|
+      if (i%2) == 1
+	temp2 << item
+      end
+    end
+    @entities["res-body"] = temp2.join
   end
   
 end
